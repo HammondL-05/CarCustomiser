@@ -22,13 +22,13 @@ struct Car {
         self.handling = handling
     }
     
-    public func createText() -> String {
+    public func displayStats() -> String {
         return """
-            Make: \(make)
-            Model: \(model)
-            Top Speed: \(topSpeed)mph
-            Acceleration (0-60): \(acceleration)
-            Handling: \(handling)
+    Make: \(make)
+    Model: \(model)
+    Top Speed: \(topSpeed)mph
+    Acceleration (0-60): \(acceleration)
+    Handling: \(handling)
     """
     }
 }
