@@ -20,6 +20,39 @@ struct ContentView: View {
     @State private var tyresPackage = false
     @State private var fuelInjectionPackage = false
     @State private var bodyKit = false
+    @State private var remainingFunds = 1000
+    
+    var exhaustPackageDisabled: Bool {
+        if remainingFunds < 500 && exhaustPackage == false {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    var tyresPackageDisabled: Bool {
+        if remainingFunds < 500 && tyresPackage == false {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    var fuelInjectionPackageDisabled: Bool {
+        if remainingFunds < 500 && fuelInjectionPackage == false {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    var bodyKitDisabled: Bool {
+        if remainingFunds < 1000 && bodyKit == false {
+            return true
+        } else {
+            return false
+        }
+    }
     
     
     var body: some View {
@@ -29,8 +62,10 @@ struct ContentView: View {
                 self.exhaustPackage = newValue
                 if newValue == true {
                     starterCars.cars[selectedCar].topSpeed += 5
+                    remainingFunds -= 500
                 } else {
                     starterCars.cars[selectedCar].topSpeed -= 5
+                    remainingFunds += 500
                 }
             }
         )
@@ -41,8 +76,10 @@ struct ContentView: View {
                 self.tyresPackage = newValue
                 if newValue == true {
                     starterCars.cars[selectedCar].handling += 2
+                    remainingFunds -= 500
                 } else {
                     starterCars.cars[selectedCar].handling -= 2
+                    remainingFunds += 500
                 }
             }
         )
@@ -53,8 +90,10 @@ struct ContentView: View {
                 self.fuelInjectionPackage = newValue
                 if newValue == true {
                     starterCars.cars[selectedCar].acceleration -= 1.5
+                    remainingFunds -= 500
                 } else {
                     starterCars.cars[selectedCar].acceleration += 1.5
+                    remainingFunds += 500
                 }
             }
         )
@@ -66,47 +105,63 @@ struct ContentView: View {
                 if newValue == true {
                     starterCars.cars[selectedCar].topSpeed += 5
                     starterCars.cars[selectedCar].handling += 1
+                    remainingFunds -= 1000
                 } else {
                     starterCars.cars[selectedCar].topSpeed -= 5
                     starterCars.cars[selectedCar].handling -= 1
+                    remainingFunds += 1000
                 }
             }
         )
+        VStack {
+            Form {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text(starterCars.cars[selectedCar].displayStats())
+                    Button("Next Car", action: {
+                        resetStats()
+                        selectedCar += 1
+                    })
+                }
+                Section {
+                    Toggle("Exhaust Package: 500", isOn: exhaustPackageBinding)
+                        .disabled(exhaustPackageDisabled)
+                    Toggle("Tyres Package: 500", isOn: tyrePackageBinding)
+                        .disabled(tyresPackageDisabled)
+                    Toggle("Fuel Injection Package: 500", isOn: fuelInjectionPackageBinding)
+                        .disabled(fuelInjectionPackageDisabled)
+                    Toggle("Body Kit: 1000", isOn: bodyKitBinding)
+                        .disabled(bodyKitDisabled)
+                }
+            }
+            Text("Remaining funds: \(remainingFunds)")
+                .foregroundColor(.red)
+                .baselineOffset(20)
+        }
+    }
+    func resetStats() {
+        if exhaustPackage == true {
+            starterCars.cars[selectedCar].topSpeed -= 5
+            remainingFunds += 500
+            exhaustPackage = false
+        }
         
-        Form {
-            VStack(alignment: .leading, spacing: 20) {
-                Text(starterCars.cars[selectedCar].displayStats())
-                Button("Next Car", action: {
-                    if exhaustPackage == true {
-                        starterCars.cars[selectedCar].topSpeed -= 5
-                        exhaustPackage = false
-                    }
-                    
-                    if tyresPackage == true {
-                        starterCars.cars[selectedCar].handling -= 2
-                        tyresPackage = false
-                    }
-                    
-                    if fuelInjectionPackage == true {
-                        starterCars.cars[selectedCar].acceleration += 1.5
-                        fuelInjectionPackage = false
-                    }
-                    
-                    if bodyKit == true {
-                        starterCars.cars[selectedCar].topSpeed -= 5
-                        starterCars.cars[selectedCar].handling -= 1
-                        bodyKit = false
-                    }
-                    
-                    selectedCar += 1
-                })
-            }
-            Section {
-                Toggle("Exhaust Package", isOn: exhaustPackageBinding)
-                Toggle("Tyres Package", isOn: tyrePackageBinding)
-                Toggle("Fuel Injection Package", isOn: fuelInjectionPackageBinding)
-                Toggle("Body Kit", isOn: bodyKitBinding)
-            }
+        if tyresPackage == true {
+            starterCars.cars[selectedCar].handling -= 2
+            remainingFunds += 500
+            tyresPackage = false
+        }
+        
+        if fuelInjectionPackage == true {
+            starterCars.cars[selectedCar].acceleration += 1.5
+            remainingFunds += 500
+            fuelInjectionPackage = false
+        }
+        
+        if bodyKit == true {
+            starterCars.cars[selectedCar].topSpeed -= 5
+            starterCars.cars[selectedCar].handling -= 1
+            remainingFunds += 1000
+            bodyKit = false
         }
     }
 }
@@ -117,3 +172,4 @@ struct ContentView_Previews: PreviewProvider {
             
     }
 }
+
