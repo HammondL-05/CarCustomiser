@@ -21,36 +21,63 @@ struct ContentView: View {
     @State private var fuelInjectionPackage = false
     @State private var bodyKit = false
     @State private var remainingFunds = 1000
+    @State private var remainingTime = 30
     
     var exhaustPackageDisabled: Bool {
-        if remainingFunds < 500 && exhaustPackage == false {
-            return true
-        } else {
-            return false
-        }
+        return exhaustPackage ? false : remainingFunds >= 500 && remainingTime > 0 ? false : true
     }
     
     var tyresPackageDisabled: Bool {
-        if remainingFunds < 500 && tyresPackage == false {
-            return true
-        } else {
-            return false
-        }
+        return tyresPackage ? false : remainingFunds >= 500 && remainingTime > 0 ? false : true
     }
     
     var fuelInjectionPackageDisabled: Bool {
-        if remainingFunds < 500 && fuelInjectionPackage == false {
-            return true
-        } else {
-            return false
-        }
+        return fuelInjectionPackage ? false : remainingFunds >= 500 && remainingTime > 0 ? false : true
     }
     
     var bodyKitDisabled: Bool {
-        if remainingFunds < 1000 && bodyKit == false {
-            return true
-        } else {
-            return false
+        return bodyKit ? false : remainingFunds >= 1000 && remainingTime > 0 ? false : true
+    }
+    
+    var changeCarDisabled: Bool {
+        return remainingTime > 0 ? false : true
+    }
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    func resetStats() {
+        if exhaustPackage == true {
+            starterCars.cars[selectedCar].topSpeed -= 5
+            remainingFunds += 500
+            exhaustPackage = false
+        }
+        
+        if tyresPackage == true {
+            starterCars.cars[selectedCar].handling -= 2
+            remainingFunds += 500
+            tyresPackage = false
+        }
+        
+        if fuelInjectionPackage == true {
+            starterCars.cars[selectedCar].acceleration += 1.5
+            remainingFunds += 500
+            fuelInjectionPackage = false
+        }
+        
+        if bodyKit == true {
+            starterCars.cars[selectedCar].topSpeed -= 5
+            starterCars.cars[selectedCar].handling -= 1
+            remainingFunds += 1000
+            bodyKit = false
+        }
+    }
+    
+    var buttonColour: Color {
+        if remainingTime <= 10 {
+            return .red
+        }
+        else {
+            return .green
         }
     }
     
@@ -114,13 +141,20 @@ struct ContentView: View {
             }
         )
         VStack {
+            Text("\(remainingTime)")
+                .onReceive(timer) { _ in
+                    if self.remainingTime > 0 {
+                        self.remainingTime -= 1
+                    }
+                }
+                .foregroundColor(buttonColour)
             Form {
                 VStack(alignment: .leading, spacing: 20) {
                     Text(starterCars.cars[selectedCar].displayStats())
                     Button("Next Car", action: {
                         resetStats()
                         selectedCar += 1
-                    })
+                    }).disabled(changeCarDisabled)
                 }
                 Section {
                     Toggle("Exhaust Package: 500", isOn: exhaustPackageBinding)
@@ -138,32 +172,7 @@ struct ContentView: View {
                 .baselineOffset(20)
         }
     }
-    func resetStats() {
-        if exhaustPackage == true {
-            starterCars.cars[selectedCar].topSpeed -= 5
-            remainingFunds += 500
-            exhaustPackage = false
-        }
-        
-        if tyresPackage == true {
-            starterCars.cars[selectedCar].handling -= 2
-            remainingFunds += 500
-            tyresPackage = false
-        }
-        
-        if fuelInjectionPackage == true {
-            starterCars.cars[selectedCar].acceleration += 1.5
-            remainingFunds += 500
-            fuelInjectionPackage = false
-        }
-        
-        if bodyKit == true {
-            starterCars.cars[selectedCar].topSpeed -= 5
-            starterCars.cars[selectedCar].handling -= 1
-            remainingFunds += 1000
-            bodyKit = false
-        }
-    }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
